@@ -63,7 +63,7 @@ final public class IOParser implements Parser {
             }
 
             if (obj.data != null) {
-                str.append(obj.data);
+                str.append(gson.toJson(obj.data));
             }
 
             if (logger.isLoggable(Level.FINE)) {
