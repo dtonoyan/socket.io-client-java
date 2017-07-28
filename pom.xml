@@ -41,6 +41,7 @@
     </developer>
   </developers>
 
+
   <repositories>
     <repository>
       <id>sonatype-oss-public</id>
@@ -65,9 +66,9 @@
       <version>1.0.0</version>
     </dependency>
     <dependency>
-      <groupId>org.json</groupId>
-      <artifactId>json</artifactId>
-      <version>20090211</version>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+      <version>2.8.1</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
