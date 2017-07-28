@@ -1,5 +1,6 @@
 package io.socket.client;
 
+import com.google.gson.JsonArray;
 import io.socket.emitter.Emitter;
 import io.socket.parser.Packet;
 import io.socket.parser.Parser;
@@ -271,7 +272,7 @@ public class Socket extends Emitter {
             case Parser.EVENT:
             case Parser.BINARY_EVENT: {
                 @SuppressWarnings("unchecked")
-                Packet<List<Object>> p = (Packet<List<Object>>) packet;
+                Packet<JsonArray> p = (Packet<JsonArray>) packet;
                 this.onevent(p);
                 break;
             }
@@ -279,7 +280,7 @@ public class Socket extends Emitter {
             case Parser.ACK:
             case Parser.BINARY_ACK: {
                 @SuppressWarnings("unchecked")
-                Packet<List<Object>> p = (Packet<List<Object>>) packet;
+                Packet<JsonArray> p = (Packet<JsonArray>) packet;
                 this.onack(p);
                 break;
             }
@@ -294,8 +295,8 @@ public class Socket extends Emitter {
         }
     }
 
-    private void onevent(Packet<List<Object>> packet) {
-        List<Object> args = packet.data;
+    private void onevent(Packet<JsonArray> packet) {
+        List<Object> args = new ArrayList<>(Arrays.asList(toArray(packet.data)));
         if (logger.isLoggable(Level.FINE)) {
             logger.fine(String.format("emitting event %s", args));
         }
@@ -329,7 +330,7 @@ public class Socket extends Emitter {
                             logger.fine(String.format("sending ack %s", args.length != 0 ? args : null));
                         }
 
-                        Packet<List<Object>> packet = new Packet<List<Object>>(Parser.ACK, Arrays.asList(args));
+                        Packet<List<Object>> packet = new Packet<>(Parser.ACK, Arrays.asList(args));
                         packet.id = id;
                         self.packet(packet);
                     }
@@ -338,13 +339,13 @@ public class Socket extends Emitter {
         };
     }
 
-    private void onack(Packet<List<Object>> packet) {
+    private void onack(Packet<JsonArray> packet) {
         Ack fn = this.acks.remove(packet.id);
         if (fn != null) {
             if (logger.isLoggable(Level.FINE)) {
                 logger.fine(String.format("calling ack %s with %s", packet.id, packet.data));
             }
-            fn.call(packet.data);
+            fn.call(toArray(packet.data));
         } else {
             if (logger.isLoggable(Level.FINE)) {
                 logger.fine(String.format("bad ack %s", packet.id));
@@ -446,21 +447,17 @@ public class Socket extends Emitter {
     public String id() {
         return this.id;
     }
-//
-//    private static Object[] toArray(JSONArray array) {
-//        int length = array.length();
-//        Object[] data = new Object[length];
-//        for (int i = 0; i < length; i++) {
-//            Object v;
-//            try {
-//                v = array.get(i);
-//            } catch (JSONException e) {
-//                logger.log(Level.WARNING, "An error occured while retrieving data from JSONArray", e);
-//                v = null;
-//            }
-//            data[i] = JSONObject.NULL.equals(v) ? null : v;
-//        }
-//        return data;
-//    }
+
+    private static Object[] toArray(JsonArray array) {
+        int length = array.size();
+        Object[] data = new Object[length];
+        for (int i = 0; i < length; i++) {
+            Object v;
+                v = array.get(i);
+
+            data[i] = v;
+        }
+        return data;
+    }
 }
 
