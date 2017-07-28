@@ -1,8 +1,7 @@
 package io.socket.parser;
 
-import io.socket.hasbinary.HasBinary;
-import org.json.JSONException;
-import org.json.JSONTokener;
+import com.google.gson.Gson;
+import com.google.gson.JsonParser;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,6 +10,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 final public class IOParser implements Parser {
+    private static Gson gson  = new Gson();
+    private static Gson getGson(){
+        return gson;
+    }
 
     private static final Logger logger = Logger.getLogger(IOParser.class.getName());
 
@@ -26,20 +29,20 @@ final public class IOParser implements Parser {
 
         @Override
         public void encode(Packet obj, Callback callback) {
-            if ((obj.type == EVENT || obj.type == ACK) && HasBinary.hasBinary(obj.data)) {
-                obj.type = obj.type == EVENT ? BINARY_EVENT : BINARY_ACK;
-            }
+//            if ((obj.type == EVENT || obj.type == ACK) && HasBinary.hasBinary(obj.data)) {
+//                obj.type = obj.type == EVENT ? BINARY_EVENT : BINARY_ACK;
+//            }
 
             if (logger.isLoggable(Level.FINE)) {
                 logger.fine(String.format("encoding packet %s", obj));
             }
-
-            if (BINARY_EVENT == obj.type || BINARY_ACK == obj.type) {
-                encodeAsBinary(obj, callback);
-            } else {
+//
+//            if (BINARY_EVENT == obj.type || BINARY_ACK == obj.type) {
+//                encodeAsBinary(obj, callback);
+//            } else {
                 String encoding = encodeAsString(obj);
                 callback.call(new String[] {encoding});
-            }
+//            }
         }
 
         private String encodeAsString(Packet obj) {
@@ -69,57 +72,57 @@ final public class IOParser implements Parser {
             return str.toString();
         }
 
-        private void encodeAsBinary(Packet obj, Callback callback) {
-            Binary.DeconstructedPacket deconstruction = Binary.deconstructPacket(obj);
-            String pack = encodeAsString(deconstruction.packet);
-            List<Object> buffers = new ArrayList<Object>(Arrays.asList(deconstruction.buffers));
-
-            buffers.add(0, pack);
-            callback.call(buffers.toArray());
-        }
+//        private void encodeAsBinary(Packet obj, Callback callback) {
+//            Binary.DeconstructedPacket deconstruction = Binary.deconstructPacket(obj);
+//            String pack = encodeAsString(deconstruction.packet);
+//            List<Object> buffers = new ArrayList<Object>(Arrays.asList(deconstruction.buffers));
+//
+//            buffers.add(0, pack);
+//            callback.call(buffers.toArray());
+//        }
     }
 
     final public static class Decoder implements Parser.Decoder {
 
-        /*package*/ BinaryReconstructor reconstructor;
+//        /*package*/ BinaryReconstructor reconstructor;
 
         private Decoder.Callback onDecodedCallback;
 
-        public Decoder() {
-            this.reconstructor = null;
-        }
+//        public Decoder() {
+//            this.reconstructor = null;
+//        }
 
         @Override
         public void add(String obj) {
             Packet packet = decodeString(obj);
-            if (BINARY_EVENT == packet.type || BINARY_ACK == packet.type) {
-                this.reconstructor = new BinaryReconstructor(packet);
-
-                if (this.reconstructor.reconPack.attachments == 0) {
-                    if (this.onDecodedCallback != null) {
-                        this.onDecodedCallback.call(packet);
-                    }
-                }
-            } else {
+//            if (BINARY_EVENT == packet.type || BINARY_ACK == packet.type) {
+//                this.reconstructor = new BinaryReconstructor(packet);
+//
+//                if (this.reconstructor.reconPack.attachments == 0) {
+//                    if (this.onDecodedCallback != null) {
+//                        this.onDecodedCallback.call(packet);
+//                    }
+//                }
+//            } else {
                 if (this.onDecodedCallback != null) {
                     this.onDecodedCallback.call(packet);
                 }
-            }
+//            }
         }
 
         @Override
         public void add(byte[] obj) {
-            if (this.reconstructor == null) {
-                throw new RuntimeException("got binary data when not reconstructing a packet");
-            } else {
-                Packet packet = this.reconstructor.takeBinaryData(obj);
-                if (packet != null) {
-                    this.reconstructor = null;
-                    if (this.onDecodedCallback != null) {
-                        this.onDecodedCallback.call(packet);
-                    }
-                }
-            }
+//            if (this.reconstructor == null) {
+//                throw new RuntimeException("got binary data when not reconstructing a packet");
+//            } else {
+//                Packet packet = this.reconstructor.takeBinaryData(obj);
+//                if (packet != null) {
+//                    this.reconstructor = null;
+//                    if (this.onDecodedCallback != null) {
+//                        this.onDecodedCallback.call(packet);
+//                    }
+//                }
+//            }
         }
 
         private static Packet decodeString(String str) {
@@ -176,13 +179,13 @@ final public class IOParser implements Parser {
             }
 
             if (length > i + 1){
-                try {
+//                try {
                     str.charAt(++i);
-                    p.data = new JSONTokener(str.substring(i)).nextValue();
-                } catch (JSONException e) {
-                    logger.log(Level.WARNING, "An error occured while retrieving data from JSONTokener", e);
-                    return error();
-                }
+                    p.data = new JsonParser().parse(str.substring(i));
+//                } catch (JSONException e) {
+//                    logger.log(Level.WARNING, "An error occured while retrieving data from JSONTokener", e);
+//                    return error();
+//                }
             }
 
             if (logger.isLoggable(Level.FINE)) {
@@ -193,9 +196,9 @@ final public class IOParser implements Parser {
 
         @Override
         public void destroy() {
-            if (this.reconstructor != null) {
-                this.reconstructor.finishReconstruction();
-            }
+//            if (this.reconstructor != null) {
+//                this.reconstructor.finishReconstruction();
+//            }
             this.onDecodedCallback = null;
         }
 
@@ -205,34 +208,34 @@ final public class IOParser implements Parser {
         }
     }
 
-
-    /*package*/ static class BinaryReconstructor {
-
-        public Packet reconPack;
-
-        /*package*/ List<byte[]> buffers;
-
-        BinaryReconstructor(Packet packet) {
-            this.reconPack = packet;
-            this.buffers = new ArrayList<byte[]>();
-        }
-
-        public Packet takeBinaryData(byte[] binData) {
-            this.buffers.add(binData);
-            if (this.buffers.size() == this.reconPack.attachments) {
-                Packet packet = Binary.reconstructPacket(this.reconPack,
-                        this.buffers.toArray(new byte[this.buffers.size()][]));
-                this.finishReconstruction();
-                return packet;
-            }
-            return null;
-        }
-
-        public void finishReconstruction () {
-            this.reconPack = null;
-            this.buffers = new ArrayList<byte[]>();
-        }
-    }
+//
+//    /*package*/ static class BinaryReconstructor {
+//
+//        public Packet reconPack;
+//
+//        /*package*/ List<byte[]> buffers;
+//
+//        BinaryReconstructor(Packet packet) {
+//            this.reconPack = packet;
+//            this.buffers = new ArrayList<byte[]>();
+//        }
+//
+//        public Packet takeBinaryData(byte[] binData) {
+//            this.buffers.add(binData);
+//            if (this.buffers.size() == this.reconPack.attachments) {
+//                Packet packet = Binary.reconstructPacket(this.reconPack,
+//                        this.buffers.toArray(new byte[this.buffers.size()][]));
+//                this.finishReconstruction();
+//                return packet;
+//            }
+//            return null;
+//        }
+//
+//        public void finishReconstruction () {
+//            this.reconPack = null;
+//            this.buffers = new ArrayList<byte[]>();
+//        }
+//    }
 }
 
 
