@@ -211,7 +211,7 @@ public class Socket extends Emitter {
         EventThread.exec(new Runnable() {
             @Override
             public void run() {
-                List<Object> sendArgs = Arrays.asList(args);
+                List<Object> sendArgs = new ArrayList<>(Arrays.asList(args));
                 sendArgs.add(0, event);
 
                 Packet<List<Object>> packet = new Packet<>(Parser.EVENT, sendArgs);
