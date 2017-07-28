@@ -1,4 +1,5 @@
-# Socket.IO-client Java
+# Socket.IO-client Java with Gson as Json Parser
+Binary Data is currently not available
 [![Build Status](https://travis-ci.org/socketio/socket.io-client-java.png?branch=master)](https://travis-ci.org/socketio/socket.io-client-java)
 
 This is the Socket.IO v1.x Client Library for Java, which is simply ported from the [JavaScript client](https://github.com/socketio/socket.io-client).
