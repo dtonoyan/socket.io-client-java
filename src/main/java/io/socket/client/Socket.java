@@ -1,6 +1,7 @@
 package io.socket.client;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonPrimitive;
 import io.socket.emitter.Emitter;
 import io.socket.parser.Packet;
 import io.socket.parser.Parser;
@@ -308,7 +309,14 @@ public class Socket extends Emitter {
 
         if (this.connected) {
             if (args.isEmpty()) return;
-            String event = args.remove(0).toString();
+            Object ev = args.remove(0);
+            String event;
+            if(ev instanceof JsonPrimitive){
+                event = ((JsonPrimitive) ev).getAsString();
+            } else {
+                event = ev.toString();
+            }
+
             super.emit(event, args.toArray());
         } else {
             this.receiveBuffer.add(args);
