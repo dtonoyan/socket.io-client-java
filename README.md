@@ -1,4 +1,6 @@
-# Socket.IO-client Java
+# Socket.IO-client Java with Gson as Json Parser
+Binary Data is currently not available
+
 [![Build Status](https://travis-ci.org/socketio/socket.io-client-java.png?branch=master)](https://travis-ci.org/socketio/socket.io-client-java)
 
 This is the Socket.IO v1.x Client Library for Java, which is simply ported from the [JavaScript client](https://github.com/socketio/socket.io-client).
@@ -16,11 +18,11 @@ Add the following dependency to your `pom.xml`.
 
 ```xml
 <dependencies>
-  <dependency>
-    <groupId>io.socket</groupId>
-    <artifactId>socket.io-client</artifactId>
-    <version>1.0.0</version>
-  </dependency>
+<dependency>
+	    <groupId>com.github.dtonoyan</groupId>
+	    <artifactId>socket.io-client-java</artifactId>
+	    <version>-SNAPSHOT</version>
+	</dependency>
 </dependencies>
 ```
 
@@ -28,7 +30,7 @@ Add the following dependency to your `pom.xml`.
 Add it as a gradle dependency for Android Studio, in `build.gradle`:
 
 ```groovy
-compile ('io.socket:socket.io-client:1.0.0') {
+compile ('com.github.dtonoyan:socket.io-client-java:13b17335df') {
   // excluding org.json which is provided by Android
   exclude group: 'org.json', module: 'json'
 }
